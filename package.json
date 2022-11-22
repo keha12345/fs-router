@@ -1,0 +1,23 @@
+{
+  "name": "fs_router",
+  "version": "1.0.0",
+  "description": "it is a router from koa and express servers with suport of roots from fs path",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/keha12345/fs-router.git"
+  },
+  "author": "github.com/keha12345",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/keha12345/fs-router/issues"
+  },
+  "homepage": "https://github.com/keha12345/fs-router#readme",
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "path": "^0.12.7"
+  }
+}
