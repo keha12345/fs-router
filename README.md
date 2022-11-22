@@ -1,5 +1,5 @@
 
-# [fs_router](https://github.com/keha12345/fs-router)
+# [auto-roots](https://github.com/keha12345/fs-router)
 
 this is a router for "koa" and "express" servers  
 that creates root automatically!
@@ -27,7 +27,7 @@ that creates root automatically!
 ## Install
 
 ```sh
-npm install auto-router
+npm install auto-roots
 ```
 
 ## Description
@@ -50,14 +50,14 @@ you will get roots:
 ```
 
 ## Koa Exemple
-Get middleware generation function ``const router = require('fs_router').koa``  
+Get middleware generation function ``const router = require('auto-roots').koa``  
 Get the middleware function ``router(path, __dirname)``  
 
 ``index.js``
 ```index.js
 const Koa = require("koa");
 const cors = require("@koa/cors");
-const router = require('fs_router').koa;
+const router = require('auto-roots').koa;
 const app = new Koa();
 
 app.use(parser())
@@ -69,13 +69,13 @@ app.use(parser())
 ```
 
 For the router to work, the controller file must return an instance of the router, otherwise it will be skipped.  
-The router constructor can be obtained from  ``require('fs_router').Router``  
+The router constructor can be obtained from  ``require('auto-roots').Router``  
 This is done as a prevention of errors causing vulnerabilities. 
 
 
 ``controller.js``
 ```controller.js
-const Router = require('fs_router').Router
+const Router = require('auto-roots').Router
 
 module.exports = new Router({
         get: (cxt) => {return `hello ${cxt.method}`},
@@ -89,14 +89,14 @@ module.exports = new Router({
 ```
 
 ## Express Exemple
-Get middleware generation function ``const router = require('fs_router').express``  
+Get middleware generation function ``const router = require('auto-roots').express``  
 Get the middleware function ``router(path, __dirname)``  
 
 ``index.js``
 ```index.js
 const express = require("express");
 const cors = require("cors");
-const router = require('fs_router').express;
+const router = require('auto-roots').express;
 const app = express();
 
 app.use(parser());
@@ -108,13 +108,13 @@ app.listen(8000, () => {
 ```
 
 For the router to work, the controller file must return an instance of the router, otherwise it will be skipped.  
-The router constructor can be obtained from  ``require('fs_router').Router``  
+The router constructor can be obtained from  ``require('auto-roots').Router``  
 This is done as a prevention of errors causing vulnerabilities. 
 
 
 ``controller.js``
 ```controller.js
-const Router = require('fs_router').Router
+const Router = require('auto-roots').Router
 
 module.exports = new Router({
         get: (cxt) => {return `hello ${cxt.method}`},
