@@ -42,15 +42,19 @@ routers
         baz.js
     other.js
 ```
-you will get root:
-/foo/bar
-/foo/baz
-/other
+you will get root:  
+  /foo/bar  
+  /foo/baz  
+  /other  
 
 
 ## Exemples
 
 ### for a Koa
+``const router = require('fs_router').koa;`` from get a router,
+``outer(path,__dirname)`` from get a middleware function
+
+``index.js``
 ```index.js
 const Koa = require("koa");
 const cors = require("@koa/cors");
@@ -65,6 +69,7 @@ app.use(parser())
   });
 ```
 
+``controller.js``
 ```controller.js
 const Router = require('fs_router').Router
 
