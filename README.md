@@ -1,7 +1,8 @@
 
 # [fs_router](https://github.com/keha12345/fs-router)
 
-it is a router from koa and express servers with suport of roots from fs path 
+this is a router for "koa" and "express" servers  
+that creates root automatically!
 
 [![license](https://img.shields.io/github/license/koajs/router.svg)](LICENSE)
 
@@ -11,7 +12,8 @@ it is a router from koa and express servers with suport of roots from fs path
 * [Features](#features)
 * [Install](#install)
 * [Description](#description)
-* [Exemples](#exemples)
+* [Koa Exemple](#koa)
+* [Express Exemple](#express)
 * [Future](#future)
 * [License](#license)
 
@@ -24,12 +26,9 @@ it is a router from koa and express servers with suport of roots from fs path
 
 ## Install
 
-[npm][]:
-
 ```sh
 npm install fs_router
 ```
-
 
 ## Description
 
@@ -42,17 +41,15 @@ routers
         baz.js
     other.js
 ```
-you will get root:  
+you will get roots:  
   /foo/bar  
   /foo/baz  
   /other  
 
 
-## Exemples
-
-### for a Koa
-``const router = require('fs_router').koa;`` from get a router,
-``outer(path,__dirname)`` from get a middleware function
+## Koa Exemple
+Get middleware generation function from ``require('fs_router').koa``  
+Turn on the middleware function that will be returned by the function ``router(path, __dirname)``  
 
 ``index.js``
 ```index.js
@@ -68,6 +65,50 @@ app.use(parser())
     console.log(`🚀 on port:${8000}`);
   });
 ```
+
+For the router to work, the controller file must return an instance of the router, otherwise it will be skipped.  
+The router constructor can be obtained from  ``require('fs_router').Router``  
+This is done as a prevention of errors causing vulnerabilities. 
+
+
+``controller.js``
+```controller.js
+const Router = require('fs_router').Router
+
+module.exports = new Router({
+        get: (cxt) => {return `hello ${cxt.method}`},
+        post: async (cxt) => {
+            await cxt.db.model.create(object)
+            return 'ok'
+        }
+    },
+    (cxt) => { if(!cxt.session) throw Error('auth failed')}
+)
+```
+
+## Express Exemple
+Get middleware generation function from ``require('fs_router').express``  
+Turn on the middleware function that will be returned by the function ``router(path, __dirname)``  
+
+``index.js``
+```index.js
+const express = require("express");
+const cors = require("cors");
+const router = require('fs_router').express;
+const app = express();
+
+app.use(parser());
+app.use(cors())
+app.use(router('routers',__dirname))
+app.listen(8000, () => {
+    console.log(`🚀 on port:${8000}`);
+  });
+```
+
+For the router to work, the controller file must return an instance of the router, otherwise it will be skipped.  
+The router constructor can be obtained from  ``require('fs_router').Router``  
+This is done as a prevention of errors causing vulnerabilities. 
+
 
 ``controller.js``
 ```controller.js
@@ -87,11 +128,10 @@ module.exports = new Router({
 
 ## Future
 
-| Name             |
-| ---------------- |
-| **Alex Mingoia** |
-| **@koajs**       |
-
+An important drawback that can be seen today is 
+that the params are not available.  
+Use queries or http headers.  
+This option will be added in future updates.  
 
 ## License
 
