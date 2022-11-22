@@ -42,10 +42,11 @@ routers
     other.js
 ```
 you will get roots:  
+```  
   /foo/bar  
   /foo/baz  
   /other  
-
+```
 
 ## Koa Exemple
 Get middleware generation function from ``require('fs_router').koa``  
