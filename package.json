@@ -1,7 +1,7 @@
 {
-  "name": "fs_router",
+  "name": "fsrouter",
   "version": "1.0.0",
-  "description": "it is a router from koa and express servers with suport of roots from fs path",
+  "description": "this is a router for koa and express servers that creates root automatically!",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -10,6 +10,15 @@
     "type": "git",
     "url": "git+https://github.com/keha12345/fs-router.git"
   },
+  "keywords": [
+    "router",
+    "koa",
+    "express",
+    "fs",
+    "path",
+    "automatically",
+    "generator"
+  ],
   "author": "github.com/keha12345",
   "license": "MIT",
   "bugs": {

@@ -27,7 +27,7 @@ that creates root automatically!
 ## Install
 
 ```sh
-npm install fs_router
+npm install fsrouter
 ```
 
 ## Description
