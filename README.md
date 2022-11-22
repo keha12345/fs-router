@@ -12,8 +12,8 @@ that creates root automatically!
 * [Features](#features)
 * [Install](#install)
 * [Description](#description)
-* [Koa Exemple](#koa)
-* [Express Exemple](#express)
+* [Koa Exemple](#koa-exemple)
+* [Express Exemple](#express-exemple)
 * [Future](#future)
 * [License](#license)
 
