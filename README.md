@@ -1,7 +1,7 @@
 
 # [fs_router](https://github.com/keha12345/fs-router)
 
-it is a router from koa and express servers with suport of roots from fs path
+it is a router from koa and express servers with suport of roots from fs path 
 
 [![license](https://img.shields.io/github/license/koajs/router.svg)](LICENSE)
 
