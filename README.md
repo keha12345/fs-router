@@ -41,6 +41,7 @@ routers
         baz.js
     other.js
 ```
+
 you will get roots:  
 ```  
   /foo/bar  
@@ -49,8 +50,8 @@ you will get roots:
 ```
 
 ## Koa Exemple
-Get middleware generation function from ``require('fs_router').koa``  
-Turn on the middleware function that will be returned by the function ``router(path, __dirname)``  
+Get middleware generation function ``const router = require('fs_router').koa``  
+Get the middleware function ``router(path, __dirname)``  
 
 ``index.js``
 ```index.js
@@ -88,8 +89,8 @@ module.exports = new Router({
 ```
 
 ## Express Exemple
-Get middleware generation function from ``require('fs_router').express``  
-Turn on the middleware function that will be returned by the function ``router(path, __dirname)``  
+Get middleware generation function ``const router = require('fs_router').express``  
+Get the middleware function ``router(path, __dirname)``  
 
 ``index.js``
 ```index.js
