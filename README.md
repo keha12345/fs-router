@@ -1,8 +1,8 @@
-# fs_router
-it is a router from koa and express servers with suport of roots from fs path
+
 # [fs_router](https://github.com/keha12345/fs-router)
 
-> Router middleware for [Koa](https://github.com/koajs/koa). Maintained by [Forward Email][forward-email] and [Lad][].
+it is a router from koa and express servers with suport of roots from fs path
+
 [![license](https://img.shields.io/github/license/koajs/router.svg)](LICENSE)
 
 
