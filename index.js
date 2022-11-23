@@ -36,26 +36,28 @@ module.exports.Router = class Router{
 module.exports.koa = function(path,dirname){
     const routes = getRoutes(path,dirname);
     return async  (cxt, next) => {
-        const requirePath = p.join(dirname,routes[cxt.request.url.split('?')[0]]);
-        if(requirePath) {
-            const router = require(requirePath);
-            if(router instanceof module.exports.Router) {
-                const cb = router._getCbs()[cxt.request.method.toLowerCase()]
-                if(cb && typeof cb === 'function'){
-                    try {
-                        let resp = cb(cxt, next)
-                        if(resp instanceof Promise) resp = await resp;
-                        if (resp instanceof Object) cxt.body = JSON.parse(resp);
-                        else cxt.body = resp;
-                    } catch (error) {
-                        if(error?.message?.includes('forbidden')){
-                            cxt.body = '...oooups! resourse forbidden!'
-                            cxt.status = 403;
+        if(routes[cxt.request.url.split('?')[0]]){
+            const requirePath = p.join(dirname,routes[cxt.request.url.split('?')[0]]);
+            if(requirePath) {
+                const router = require(requirePath);
+                if(router instanceof module.exports.Router) {
+                    const cb = router._getCbs()[cxt.request.method.toLowerCase()]
+                    if(cb && typeof cb === 'function'){
+                        try {
+                            let resp = cb(cxt, next)
+                            if(resp instanceof Promise) resp = await resp;
+                            if (resp instanceof Object) cxt.body = JSON.parse(resp);
+                            else cxt.body = resp;
+                        } catch (error) {
+                            if(error?.message?.includes('forbidden')){
+                                cxt.body = '...oooups! resourse forbidden!'
+                                cxt.status = 403;
+                            }
+                            else throw Error(`${requirePath}
+                            Method ${cxt.request.method.toLowerCase()} has an error: ${error.message} \n`);
                         }
-                        else throw Error(`${requirePath}
-                        Method ${cxt.request.method.toLowerCase()} has an error: ${error.message} \n`);
+                        return;
                     }
-                    return;
                 }
             }
         }
@@ -73,25 +75,27 @@ module.exports.koa = function(path,dirname){
 module.exports.express = function(path,dirname){
     const routes = getRoutes(path,dirname);
     return async  (req, res, next) => {
-        const requirePath = p.join(dirname,routes[req.path]);
-        if(requirePath) {
-            const router = require(requirePath);
-            if(router instanceof module.exports.Router) {
-                const cb = router._getCbs()[req.method.toLowerCase()]
-                if(cb && typeof cb === 'function'){
-                    try {
-                        let resp = cb(req, res, next)
-                        if(resp instanceof Promise) resp = await resp;
-                        if (resp instanceof Object) res.json(resp);
-                        else res.send(resp);
-                    } catch (error) {
-                        if(error?.message?.includes('forbidden')){
-                            res.status(403).send('...oooups! resourse forbidden!');
+        if(routes[req.path]){
+            const requirePath = p.join(dirname,routes[req.path]);
+            if(requirePath) {
+                const router = require(requirePath);
+                if(router instanceof module.exports.Router) {
+                    const cb = router._getCbs()[req.method.toLowerCase()]
+                    if(cb && typeof cb === 'function'){
+                        try {
+                            let resp = cb(req, res, next)
+                            if(resp instanceof Promise) resp = await resp;
+                            if (resp instanceof Object) res.json(resp);
+                            else res.send(resp);
+                        } catch (error) {
+                            if(error?.message?.includes('forbidden')){
+                                res.status(403).send('...oooups! resourse forbidden!');
+                            }
+                            else throw Error(`${requirePath}
+                            Method ${req.method.toLowerCase()} has an error: ${error.message} \n`);
                         }
-                        else throw Error(`${requirePath}
-                        Method ${req.method.toLowerCase()} has an error: ${error.message} \n`);
+                        return;
                     }
-                    return;
                 }
             }
         }
