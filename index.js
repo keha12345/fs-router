@@ -26,6 +26,7 @@ module.exports.Router = class Router{
     }
 }
 
+
 /**
  * 
  * @param {String} path - path to folder with controllers

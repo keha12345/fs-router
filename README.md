@@ -123,7 +123,7 @@ module.exports = new Router({
             return 'ok'
         }
     },
-    (req, res) => { if(!cxt.session) throw Error('auth failed')}
+    (req, res) => { if(!req.session) throw Error('auth failed')}
 )
 ```
 
@@ -138,7 +138,6 @@ This option will be added in future updates.
 ## License
 
 [MIT](LICENSE) © Kirill Kukuliev
-
 
 ##
 
