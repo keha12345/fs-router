@@ -36,10 +36,10 @@ You can get automatic root controllers in the file system
 
 ```
 routers
-    foo
-        bar.js
-        baz.js
-    other.js
+├――――――foo
+│      ├―――bar.js
+│      └――baz.js
+└―――――other.js
 ```
 
 you will get roots:  
