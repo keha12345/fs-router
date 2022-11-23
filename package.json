@@ -1,6 +1,6 @@
 {
   "name": "auto-roots",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "this is a router for koa and express servers that creates root automatically!",
   "main": "index.js",
   "scripts": {

@@ -119,7 +119,7 @@ const Router = require('auto-roots').Router
 module.exports = new Router({
         get: (req, res) => {return `hello ${cxt.method}`},
         post: async (req, res) => {
-            await cxt.db.model.create(object)
+            await model.create(object)
             return 'ok'
         }
     },
