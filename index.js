@@ -15,13 +15,13 @@ module.exports.Router = class Router{
         return Object.keys(this.controllersObj)
         .reduce((acc, el) => ({
             ...acc, 
-            [el]: (cxt)=>{
+            [el]: (...args)=>{
                 try {
-                    if(typeof this.checkCb === 'function') this.checkCb(cxt);
+                    if(typeof this.checkCb === 'function') this.checkCb(...args);
                 } catch (error) {
                     throw Error('forbidden');
                 }
-                return this.controllersObj[el](cxt);
+                return this.controllersObj[el](...args);
         }}),{})
     }
 }

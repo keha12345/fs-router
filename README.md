@@ -117,13 +117,13 @@ This is done as a prevention of errors causing vulnerabilities.
 const Router = require('auto-roots').Router
 
 module.exports = new Router({
-        get: (cxt) => {return `hello ${cxt.method}`},
-        post: async (cxt) => {
+        get: (req, res) => {return `hello ${cxt.method}`},
+        post: async (req, res) => {
             await cxt.db.model.create(object)
             return 'ok'
         }
     },
-    (cxt) => { if(!cxt.session) throw Error('auth failed')}
+    (req, res) => { if(!cxt.session) throw Error('auth failed')}
 )
 ```
 
