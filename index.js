@@ -11,18 +11,32 @@ module.exports.Router = class Router{
         this.controllersObj = controllers;
         this.checkCb = checkCb;
     }
-    _getCbs(){
-        return Object.keys(this.controllersObj)
-        .reduce((acc, el) => ({
-            ...acc, 
-            [el]: (...args)=>{
-                try {
-                    if(typeof this.checkCb === 'function') this.checkCb(...args);
-                } catch (error) {
-                    throw Error('forbidden');
+    _getController(method){
+        return  async (...args)=>{
+                const functions = [];
+                if(typeof this.checkCb === 'function') functions.push(this.checkCb);
+                if(Array.isArray(this.checkCb)) functions.push(...this.checkCb);
+                if(typeof this.controllersObj[method] === 'function') functions.push(this.controllersObj[method]);
+                if(Array.isArray(this.controllersObj[method])) functions.push(...this.controllersObj[method]);
+                if(args.length == 2){
+                    let [cxt] = args;
+                    return await this.#call(functions, cxt);
                 }
-                return this.controllersObj[el](...args);
-        }}),{})
+                if(args.length == 3){
+                    let [req, res] = args;
+                    return await this.#call(functions, req, res);
+                }
+                // try {
+                //     if(typeof this.checkCb === 'function') this.checkCb(...args);
+                // } catch (error) {
+                //     throw Error('forbidden');
+                // }
+                // return this.controllersObj[el](...args);
+        }
+    }
+
+    async #call(functions, ...args){
+        return await functions[0](...args, async ()=> await this.#call(functions.slice(1), args));
     }
 }
 
@@ -41,13 +55,11 @@ module.exports.koa = function(path,dirname){
             if(requirePath) {
                 const router = require(requirePath);
                 if(router instanceof module.exports.Router) {
-                    const cb = router._getCbs()[cxt.request.method.toLowerCase()]
+                    const cb = router._getController(cxt.request.method.toLowerCase());
                     if(cb && typeof cb === 'function'){
                         try {
-                            let resp = cb(cxt, next)
-                            if(resp instanceof Promise) resp = await resp;
-                            if (resp instanceof Object) cxt.body = JSON.parse(resp);
-                            else cxt.body = resp;
+                            let result = await cb(cxt, next)
+                            if(result) cxt.body = result;
                         } catch (error) {
                             if(error?.message?.includes('forbidden')){
                                 cxt.body = '...oooups! resourse forbidden!'
@@ -80,13 +92,12 @@ module.exports.express = function(path,dirname){
             if(requirePath) {
                 const router = require(requirePath);
                 if(router instanceof module.exports.Router) {
-                    const cb = router._getCbs()[req.method.toLowerCase()]
+                    const cb = router._getController(req.method.toLowerCase());
                     if(cb && typeof cb === 'function'){
                         try {
-                            let resp = cb(req, res, next)
-                            if(resp instanceof Promise) resp = await resp;
-                            if (resp instanceof Object) res.json(resp);
-                            else res.send(resp);
+                            let result = await cb(req, res, next)
+                            if(typeof result === 'object') res.json(result);
+                            else if(result) res.send(result);
                         } catch (error) {
                             if(error?.message?.includes('forbidden')){
                                 res.status(403).send('...oooups! resourse forbidden!');
