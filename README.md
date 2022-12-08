@@ -78,15 +78,36 @@ This is done as a prevention of errors causing vulnerabilities.
 const Router = require('auto-roots').Router
 
 module.exports = new Router({
-        get: (cxt) => {return `hello ${cxt.method}`},
-        post: async (cxt) => {
-            await cxt.db.model.create(object)
-            return 'ok'
+        get: async (ctx) => {return `hello ${ctx.method}`},
+        post: async (ctx) => {
+            await ctx.db.model.create(object)
+            return {status: 'ok'}
         }
     },
-    (cxt) => { if(!cxt.session) throw Error('auth failed')}
+    async (ctx, next) => { if(ctx.session) await next()}
 )
-```
+``` 
+
+It is also possible to use a middleware array 
+
+``controller.js``
+```controller.js
+const Router = require('auto-roots').Router
+
+module.exports = new Router({
+        get: async (ctx) => {return `hello ${ctx.method}`},
+        post: [
+          checkSessionMiddleware,
+          async (ctx) => {
+            await ctx.db.model.create(object)
+            return {status: 'ok'}
+          }
+        ]
+    },
+    [(ctx, next) => if(true) await next(), otherMiddleware, forWxampleMiddleware ]
+)
+``` 
+You can combine arrays or single functions inside one constructor.  
 
 ## Express Exemple
 Get middleware generation function ``const router = require('auto-roots').express``  
@@ -114,26 +135,49 @@ This is done as a prevention of errors causing vulnerabilities.
 
 ``controller.js``
 ```controller.js
-const Router = require('auto-roots').Router
+const Router = require('auto-roots').Router;
+const {model} = require('../db/models');
 
 module.exports = new Router({
-        get: (req, res) => {return `hello ${cxt.method}`},
+        get: async (req, res) => {return `hello ${req.method}`},
         post: async (req, res) => {
             await model.create(object)
-            return 'ok'
+            return {status: 'ok'}
         }
     },
-    (req, res) => { if(!req.session) throw Error('auth failed')}
+    async (req, res, next) => { if(req.session) next()}
 )
-```
+``` 
+
+It is also possible to use a middleware array 
+
+``controller.js``
+```controller.js
+const Router = require('auto-roots').Router
+const {model} = require('../db/models');
+
+module.exports = new Router({
+        get: async (req, res) => {return `hello ${req.method}`},
+        post: [
+          checkSessionMiddleware,
+          async (req, res) => {
+            await model.create(object)
+            return {status: 'ok'}
+          }
+        ]
+    },
+    [(req, res, next) => if(true) next(), otherMiddleware, forWxampleMiddleware ]
+)
+``` 
+You can combine arrays or single functions inside one constructor. You can use to sync controllers functions. 
 
 
 ## Future
 
 An important drawback that can be seen today is 
 that the params are not available.  
-Use queries or http headers.  
-This option will be added in future updates.  
+Use query strings or http headers.  
+This option will be added in future updates. 
 
 ## License
 
