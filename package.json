@@ -1,6 +1,6 @@
 {
   "name": "auto-roots",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "this is a router for koa and express servers that creates root automatically!",
   "main": "index.js",
   "scripts": {
@@ -12,11 +12,13 @@
   },
   "keywords": [
     "router",
+    "roots",
     "koa",
     "express",
     "fs",
     "path",
     "automatically",
+    "auto",
     "generator"
   ],
   "author": "github.com/keha12345",

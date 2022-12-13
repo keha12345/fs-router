@@ -2,10 +2,11 @@ const fs = require('fs');
 const p = require('path');
 
 module.exports.Router = class Router{
+    #ctx = null;
     /**
      * 
-     * @param {{method: Function,}} controllers - example { get: (cxt) => {...} }
-     * @param {Function} checkCb - middleware, calls to next() automaticly, you should to throw if resurse forbidden
+     * @param {{method: Function|[Function],}} controllers - { get: async (cxt) => {...} }
+     * @param {Function|[Function]} checkCb - middleware or array of middlewaries
      */
     constructor(controllers, checkCb = null){
         this.controllersObj = controllers;
@@ -18,25 +19,25 @@ module.exports.Router = class Router{
                 if(Array.isArray(this.checkCb)) functions.push(...this.checkCb);
                 if(typeof this.controllersObj[method] === 'function') functions.push(this.controllersObj[method]);
                 if(Array.isArray(this.controllersObj[method])) functions.push(...this.controllersObj[method]);
-                if(args.length == 2){
-                    let [cxt] = args;
-                    return await this.#call(functions, cxt);
-                }
-                if(args.length == 3){
-                    let [req, res] = args;
-                    return await this.#call(functions, req, res);
-                }
-                // try {
-                //     if(typeof this.checkCb === 'function') this.checkCb(...args);
-                // } catch (error) {
-                //     throw Error('forbidden');
-                // }
-                // return this.controllersObj[el](...args);
+                this.#ctx = args;
+                const result = await this.#call(functions);
+                this.#ctx = null;
+                return result
         }
     }
 
-    async #call(functions, ...args){
-        return await functions[0](...args, async ()=> await this.#call(functions.slice(1), args));
+    async #call(functions){
+        for(let func of functions){
+            const result = await (new Promise(async res => {
+                let next = null
+                const result = await func(...this.#ctx, ()=>{
+                    next = 1;
+                    res();
+                });
+                if(!next) res(result);
+            }));
+            if(result) return result;
+        }
     }
 }
 
@@ -57,17 +58,8 @@ module.exports.koa = function(path,dirname){
                 if(router instanceof module.exports.Router) {
                     const cb = router._getController(cxt.request.method.toLowerCase());
                     if(cb && typeof cb === 'function'){
-                        try {
-                            let result = await cb(cxt, next)
+                            let result = await cb(cxt);
                             if(result) cxt.body = result;
-                        } catch (error) {
-                            if(error?.message?.includes('forbidden')){
-                                cxt.body = '...oooups! resourse forbidden!'
-                                cxt.status = 403;
-                            }
-                            else throw Error(`${requirePath}
-                            Method ${cxt.request.method.toLowerCase()} has an error: ${error.message} \n`);
-                        }
                         return;
                     }
                 }
@@ -95,7 +87,7 @@ module.exports.express = function(path,dirname){
                     const cb = router._getController(req.method.toLowerCase());
                     if(cb && typeof cb === 'function'){
                         try {
-                            let result = await cb(req, res, next)
+                            let result = await cb(req, res)
                             if(typeof result === 'object') res.json(result);
                             else if(result) res.send(result);
                         } catch (error) {
