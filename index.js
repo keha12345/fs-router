@@ -65,8 +65,8 @@ module.exports.koa = function(path,dirname){
                 }
             }
         }
-        cxt.body = '...oooups! resourse not found!'
-        cxt.status = 404;
+        // cxt.body = '...oooups! resourse not found!'
+        // cxt.status = 404;
         await next();
     }
 }
