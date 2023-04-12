@@ -67,6 +67,7 @@ module.exports.koa = function(path,dirname){
         }
         cxt.body = '...oooups! resourse not found!'
         cxt.status = 404;
+        await next();
     }
 }
 
@@ -102,7 +103,8 @@ module.exports.express = function(path,dirname){
                 }
             }
         }
-        res.status(404).send('...oooups! resourse not found!');
+        // res.status(404).send('...oooups! resourse not found!');
+        next();
     }
 }
 
