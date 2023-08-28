@@ -106,7 +106,7 @@ exports.Root = class Root {
                 await middleware(ctx, async () => {next=true});
                 if(!next) return;
             }
-            for(let controller of this.methods[ctx.request.method.toUpperCase()]){
+            for(let controller of this.methods[ctx.request.method.toUpperCase()] || []){
                 let next = false;
                 await controller(ctx, async ()=> {next=true});
                 if(!next) return;
@@ -126,7 +126,7 @@ exports.Root = class Root {
                 await middleware(req, res, async () => {next=true});
                 if(!next) return;
             }
-            for(let controller of this.methods[req.method.toUpperCase()]){
+            for(let controller of this.methods[req.method.toUpperCase()] || []){
                 let next = false;
                 await controller(req, res, async ()=> {next=true});
                 if(!next) return;
