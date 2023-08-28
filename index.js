@@ -95,7 +95,7 @@ exports.Root = class Root {
      * )
      */
     constructor(methods, defenders=[]){ 
-        this.methods = Object.keys(methods).map(k => Array.isArray(methods[k])?methods[k] : [methods[k]]);
+        this.methods = Object.keys(methods).reduce((acc, el) => ({...acc, ...{[el]: methods[el].length? methods[el]: [methods[el]]}}),{});
         this.defenders = defenders;
     }
 
@@ -141,7 +141,7 @@ exports.Root = class Root {
 }
 
 function getRoots(direction, prefix='/'){
-    return fs.readdirSync(path.join(__dirname,direction+prefix))
+    return fs.readdirSync(direction+prefix)
     .map(file => {
         if(file.includes('.js')){
             const controller = require(direction+prefix+file)

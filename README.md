@@ -62,7 +62,7 @@ const app = new Koa();
 
 app.use(parser())
   .use(cors())
-  .use(router('routers'))
+  .use(router(__dirname+'/roots'))
   .listen(8000, () => {
     console.log(`🚀 on port:${8000}`);
   });
@@ -109,7 +109,7 @@ const app = express();
 
 app.use(parser());
 app.use(cors())
-app.use(router('routers'))
+app.use(router(__dirname+'/roots'))
 app.listen(8000, () => {
     console.log(`🚀 on port:${8000}`);
   });
