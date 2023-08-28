@@ -1,134 +1,155 @@
 const fs = require('fs');
-const p = require('path');
+const path = require('path');
 
-module.exports.Router = class Router{
-    #ctx = null;
+/**
+ * 
+ * @param {string} path - path of roots folder  
+ * @returns function - combiner of controllers
+ * @example
+ * 
+ * app.use(router(__dirname+'/roots'));
+ * 
+ */
+exports.koa = (path) => {
+    const roots = getRoots(path);
+    return async (ctx, next) => {
+        let reqStr = ctx.request.href.replace( ctx.request.origin,'')
+        reqStr = 
+        reqStr.includes('/?')? reqStr.split('/?')[0]: 
+        reqStr.includes('?')? reqStr.split('?')[0] : 
+        reqStr;
+        const root = roots[reqStr];
+        // console.log(reqStr, roots, roots[reqStr]);
+        if(!root) return ctx.response.status = 404; 
+        return await root._koaHandler(ctx, next);
+    }
+}
+
+/**
+ * 
+ * @param {string} path - path of roots folder  
+ * @returns function - combiner of controllers
+ * @example
+ * 
+ * app.use(router(__dirname+'/roots'));
+ * 
+ */
+exports.express = (path) => {
+    const roots = getRoots(path);
+    return async (request, res, next) => {
+        let reqStr = request.href.replace( request.origin,'')
+        reqStr = 
+        reqStr.includes('/?')? reqStr.split('/?')[0]: 
+        reqStr.includes('?')? reqStr.split('?')[0] : 
+        reqStr;
+        const root = roots[reqStr];
+        // console.log(reqStr, roots, roots[reqStr]);
+        if(!root) return ctx.response.status = 404; 
+        return await root._expressHandler(request, res, next);
+    }
+}
+
+exports.Root = class Root {
     /**
+     * @param {object} methods - object of arrays of middlewares {GET: [],POST: [],CREATE: [],DELETE: []}
+     * @param {Array} methods.GET - array of functions // async (ctx) => ctx.body= 'hello'
+     * @param {Array} defenders - array of middlewares
+     * @returns {Root} a instance of root
      * 
-     * @param {{method: Function|[Function],}} controllers - { get: async (cxt) => {...} }
-     * @param {Function|[Function]} checkCb - middleware or array of middlewaries
+     * @example 
+     *  
+     * module.exports = new Root({ 
+     *  GET: [
+     *      middlewareFunction,
+     *      async (ctx,next) => {
+        *      ctx.body = hello;
+        *      await next();
+     *      },
+     *      anotherMiddlewareFunction
+     *  ],
+     *  DELETE: [ async (ctx,next) => {
+        *      ctx.body = 'something deleted';
+        *      await next();
+     *      }]
+     * },
+     * [checkUserMiddleware, checkSomthingElse]
+     * )
+     * 
+     * OR
+     * 
+     * module.exports = new Root({ 
+     *  GET: [
+     *      middlewareFunction,
+     *      async (req,res,next) => {
+        *      req.sesion.hello = hello;
+        *      next();
+     *      },
+     *      sendHelloFunction
+     *  ],
+     *  DELETE: [ async (req,res,next) => {
+        *      console.log('something deleted');
+        *      res.status(200).end()
+     *      }]
+     * },
+     * [checkUserMiddleware, checkSomthingElse]
+     * )
      */
-    constructor(controllers, checkCb = null){
-        this.controllersObj = controllers;
-        this.checkCb = checkCb;
-    }
-    _getController(method){
-        return  async (...args)=>{
-                const functions = [];
-                if(typeof this.checkCb === 'function') functions.push(this.checkCb);
-                if(Array.isArray(this.checkCb)) functions.push(...this.checkCb);
-                if(typeof this.controllersObj[method] === 'function') functions.push(this.controllersObj[method]);
-                if(Array.isArray(this.controllersObj[method])) functions.push(...this.controllersObj[method]);
-                this.#ctx = args;
-                const result = await this.#call(functions);
-                this.#ctx = null;
-                return result
-        }
+    constructor(methods, defenders=[]){ 
+        this.methods = Object.keys(methods).map(k => Array.isArray(methods[k])?methods[k] : [methods[k]]);
+        this.defenders = defenders;
     }
 
-    async #call(functions){
-        for(let func of functions){
-            const result = await (new Promise(async res => {
-                let next = null
-                const result = await func(...this.#ctx, ()=>{
-                    next = 1;
-                    res();
-                });
-                if(!next) res(result);
-            }));
-            if(result) return result;
-        }
-    }
-}
-
-
-/**
- * 
- * @param {String} path - path to folder with controllers
- * @param {String} dirname - it is __dirname 
- * @returns {Function} middleware callback from koa app
- */
-module.exports.koa = function(path,dirname){
-    const routes = getRoutes(path,dirname);
-    return async  (cxt, next) => {
-        if(routes[cxt.request.url.split('?')[0]]){
-            const requirePath = p.join(dirname,routes[cxt.request.url.split('?')[0]]);
-            if(requirePath) {
-                const router = require(requirePath);
-                if(router instanceof module.exports.Router) {
-                    const cb = router._getController(cxt.request.method.toLowerCase());
-                    if(cb && typeof cb === 'function'){
-                            let result = await cb(cxt);
-                            if(result) cxt.body = result;
-                        return;
-                    }
-                }
-            }
-        }
-        // cxt.body = '...oooups! resourse not found!'
-        // cxt.status = 404;
-        await next();
-    }
-}
-
-/**
- * 
- * @param {String} path - path to folder with controllers
- * @param {String} dirname - it is __dirname 
- * @returns {Function} middleware callback from express app
- */
-module.exports.express = function(path,dirname){
-    const routes = getRoutes(path,dirname);
-    return async  (req, res, next) => {
-        if(routes[req.path]){
-            const requirePath = p.join(dirname,routes[req.path]);
-            if(requirePath) {
-                const router = require(requirePath);
-                if(router instanceof module.exports.Router) {
-                    const cb = router._getController(req.method.toLowerCase());
-                    if(cb && typeof cb === 'function'){
-                        try {
-                            let result = await cb(req, res)
-                            if(typeof result === 'object') res.json(result);
-                            else if(result) res.send(result);
-                        } catch (error) {
-                            if(error?.message?.includes('forbidden')){
-                                res.status(403).send('...oooups! resourse forbidden!');
-                            }
-                            else throw Error(`${requirePath}
-                            Method ${req.method.toLowerCase()} has an error: ${error.message} \n`);
-                        }
-                        return;
-                    }
-                }
-            }
-        }
-        // res.status(404).send('...oooups! resourse not found!');
-        next();
-    }
-}
-
-function getRoutes(link,dirname){
-   try {
-        return getRoutesObj(link,dirname)
-        .reduce((acc, el)=>({
-            ...acc,
-            [el.split(link.replace('./',''))[1].replace('.js','')]: './'+el
-        }),{})
-   } catch (error) {
-        throw Error(`Incorrect path "${link}"\n or dirname "${dirname}" \n`)
-   }
-}
-
-function getRoutesObj(link,dirname){
-    const routes= [];
-    for(let el of fs.readdirSync(p.join(dirname,link))){
+    async _koaHandler(ctx, next) {
         try {
-            routes.push(...routes,...getRoutesObj(p.join(link,el),dirname));
-        } catch {
-            routes.push(...routes, p.join(link,el));
+            for( let middleware of this.defenders){
+                let next = false;
+                await middleware(ctx, async () => {next=true});
+                if(!next) return;
+            }
+            for(let controller of this.methods[ctx.request.method.toUpperCase()]){
+                let next = false;
+                await controller(ctx, async ()=> {next=true});
+                if(!next) return;
+            }
+            return await next()
+        } catch (error) {
+            console.log(error.message);
+            ctx.status = 500;
+            return;
         }
     }
-    return routes
+
+    async _expressHandler(req, res, next) {
+        try {
+            for( let middleware of this.defenders){
+                let next = false;
+                await middleware(req, res, async () => {next=true});
+                if(!next) return;
+            }
+            for(let controller of this.methods[req.method.toUpperCase()]){
+                let next = false;
+                await controller(req, res, async ()=> {next=true});
+                if(!next) return;
+            }
+            return next()
+        } catch (error) {
+            console.log(error.message);
+            ctx.status = 500;
+            return;
+        }
+    }
 }
 
+function getRoots(direction, prefix='/'){
+    return fs.readdirSync(path.join(__dirname,direction+prefix))
+    .map(file => {
+        if(file.includes('.js')){
+            const controller = require(direction+prefix+file)
+            if(!(controller instanceof exports.Root)) return {};
+            return {[prefix+file.split('.js')[0]]: controller}
+        }else{
+            return getRoots(direction, prefix+file+'/')
+        }
+    })
+    .reduce((acc,root)=> ({...acc, ...root}),{});
+}

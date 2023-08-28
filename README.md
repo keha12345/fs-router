@@ -62,7 +62,7 @@ const app = new Koa();
 
 app.use(parser())
   .use(cors())
-  .use(router('routers',__dirname))
+  .use(router('routers'))
   .listen(8000, () => {
     console.log(`🚀 on port:${8000}`);
   });
@@ -75,43 +75,30 @@ This is done as a prevention of errors causing vulnerabilities.
 
 ``controller.js``
 ```controller.js
-const Router = require('auto-roots').Router
+const Root = require('auto-roots').Root
 
-module.exports = new Router({
-        get: async (ctx) => {return `hello ${ctx.method}`},
-        post: async (ctx) => {
-            await ctx.db.model.create(object)
-            return {status: 'ok'}
-        }
-    },
-    async (ctx, next) => { if(ctx.session) await next()}
-)
-``` 
-
-It is also possible to use a middleware array 
-
-``controller.js``
-```controller.js
-const Router = require('auto-roots').Router
-
-module.exports = new Router({
-        get: async (ctx) => {return `hello ${ctx.method}`},
-        post: [
-          checkSessionMiddleware,
-          async (ctx) => {
-            await ctx.db.model.create(object)
-            return {status: 'ok'}
-          }
-        ]
-    },
-    [(ctx, next) => if(true) await next(), otherMiddleware, forWxampleMiddleware ]
-)
+module.exports = new Root({ 
+       GET: [
+           middlewareFunction,
+           async (ctx,next) => {
+              ctx.body = hello;
+              await next();
+           },
+           anotherMiddlewareFunction
+       ],
+       DELETE: [ async (ctx,next) => {
+              ctx.body = 'something deleted';
+              await next();
+           }]
+       },
+       [checkUserMiddleware, checkSomthingElse]
+      )
 ``` 
 You can combine arrays or single functions inside one constructor.  
 
 ## Express Exemple
 Get middleware generation function ``const router = require('auto-roots').express``  
-Get the middleware function ``router(path, __dirname)``  
+Get the middleware function ``router(path)``  
 
 ``index.js``
 ```index.js
@@ -122,7 +109,7 @@ const app = express();
 
 app.use(parser());
 app.use(cors())
-app.use(router('routers',__dirname))
+app.use(router('routers'))
 app.listen(8000, () => {
     console.log(`🚀 on port:${8000}`);
   });
@@ -135,40 +122,24 @@ This is done as a prevention of errors causing vulnerabilities.
 
 ``controller.js``
 ```controller.js
-const Router = require('auto-roots').Router;
-const {model} = require('../db/models');
-
-module.exports = new Router({
-        get: async (req, res) => {return `hello ${req.method}`},
-        post: async (req, res) => {
-            await model.create(object)
-            return {status: 'ok'}
-        }
-    },
-    async (req, res, next) => { if(req.session) next()}
-)
+module.exports = new Root({ 
+      GET: [
+          middlewareFunction,
+          async (req,res,next) => {
+            req.sesion.hello = hello;
+            next();
+          },
+          sendHelloFunction
+      ],
+      DELETE: [ async (req,res,next) => {
+            console.log('something deleted');
+            res.status(200).end()
+          }]
+     },
+     [checkUserMiddleware, checkSomthingElse]
+     )
 ``` 
 
-It is also possible to use a middleware array 
-
-``controller.js``
-```controller.js
-const Router = require('auto-roots').Router
-const {model} = require('../db/models');
-
-module.exports = new Router({
-        get: async (req, res) => {return `hello ${req.method}`},
-        post: [
-          checkSessionMiddleware,
-          async (req, res) => {
-            await model.create(object)
-            return {status: 'ok'}
-          }
-        ]
-    },
-    [(req, res, next) => if(true) next(), otherMiddleware, forWxampleMiddleware ]
-)
-``` 
 You can combine arrays or single functions inside one constructor. You can use to sync controllers functions. 
 
 
@@ -185,4 +156,4 @@ This option will be added in future updates.
 
 ##
 
-Thank a million!
+Thank's a million!
