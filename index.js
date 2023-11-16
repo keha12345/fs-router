@@ -10,9 +10,11 @@ const path = require('path');
  * app.use(router(__dirname+'/roots'));
  * 
  */
-exports.koa = (path) => {
+exports.router = (path) => {
     const roots = getRoots(path);
-    return async (ctx, next) => {
+    return async (...args) => {
+        // async (ctx, next) => {
+
         let reqStr = ctx.request.href.replace( ctx.request.origin,'')
         reqStr = 
         reqStr.includes('/?')? reqStr.split('/?')[0]: 
@@ -20,32 +22,9 @@ exports.koa = (path) => {
         reqStr;
         const root = roots[reqStr];
         // console.log(reqStr, roots, roots[reqStr]);
-        if(!root) return ctx.response.status = 404; 
-        return await root._koaHandler(ctx, next);
-    }
-}
-
-/**
- * 
- * @param {string} path - path of roots folder  
- * @returns function - combiner of controllers
- * @example
- * 
- * app.use(router(__dirname+'/roots'));
- * 
- */
-exports.express = (path) => {
-    const roots = getRoots(path);
-    return async (request, res, next) => {
-        let reqStr = request.href.replace( request.origin,'')
-        reqStr = 
-        reqStr.includes('/?')? reqStr.split('/?')[0]: 
-        reqStr.includes('?')? reqStr.split('?')[0] : 
-        reqStr;
-        const root = roots[reqStr];
-        // console.log(reqStr, roots, roots[reqStr]);
-        if(!root) return ctx.response.status = 404; 
-        return await root._expressHandler(request, res, next);
+        if(!root && args.length === 2) return args[0].response.status = 404; 
+        if(!root && args.length === 3) return args[1].sendStatus(404); 
+        return await root[args.length === 2? '_koaHandler' : '_expressHandler'](...args);
     }
 }
 
@@ -74,66 +53,43 @@ exports.Root = class Root {
      * },
      * [checkUserMiddleware, checkSomthingElse]
      * )
-     * 
-     * OR
-     * 
-     * module.exports = new Root({ 
-     *  GET: [
-     *      middlewareFunction,
-     *      async (req,res,next) => {
-        *      req.sesion.hello = hello;
-        *      next();
-     *      },
-     *      sendHelloFunction
-     *  ],
-     *  DELETE: [ async (req,res,next) => {
-        *      console.log('something deleted');
-        *      res.status(200).end()
-     *      }]
-     * },
-     * [checkUserMiddleware, checkSomthingElse]
-     * )
      */
     constructor(methods, defenders=[]){ 
-        this.methods = Object.keys(methods).reduce((acc, el) => ({...acc, ...{[el]: methods[el].length? methods[el]: [methods[el]]}}),{});
+        this.methods = methods;
         this.defenders = defenders;
     }
 
     async _koaHandler(ctx, next) {
         try {
             for( let middleware of this.defenders){
-                let next = false;
-                await middleware(ctx, async () => {next=true});
-                if(!next) return;
+                const result = await ( new Promise((res) => middleware(ctx, async ()=> {res('next')}).then(() => res('no'))))
+                if(result !== 'next') return;
             }
-            for(let controller of this.methods[ctx.request.method.toUpperCase()] || []){
-                let next = false;
-                await controller(ctx, async ()=> {next=true});
-                if(!next) return;
+            for(let controller of this.methods[ctx.request.method.toUpperCase()]){
+                const result = await ( new Promise((res) => controller(ctx, async ()=> {res('next')}).then(() => res('no'))))
+                if(result !== 'next') return;
             }
             return await next()
         } catch (error) {
-            console.log(error.message);
+            ctx.log(error.message, 'error');
             ctx.status = 500;
             return;
         }
     }
 
-    async _expressHandler(req, res, next) {
+    async _expressHandler(request, response, next) {
         try {
             for( let middleware of this.defenders){
-                let next = false;
-                await middleware(req, res, async () => {next=true});
-                if(!next) return;
+                const result = await ( new Promise((res) => middleware(request, response, async ()=> {res('next')}).then(() => res('no'))))
+                if(result !== 'next') return;
             }
-            for(let controller of this.methods[req.method.toUpperCase()] || []){
-                let next = false;
-                await controller(req, res, async ()=> {next=true});
-                if(!next) return;
+            for(let controller of this.methods[ctx.request.method.toUpperCase()]){
+                const result = await ( new Promise((res) => controller(request, response, async ()=> {res('next')}).then(() => res('no'))))
+                if(result !== 'next') return;
             }
-            return next()
+            return await next()
         } catch (error) {
-            console.log(error.message);
+            ctx.log(error.message, 'error');
             ctx.status = 500;
             return;
         }

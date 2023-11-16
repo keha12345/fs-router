@@ -50,32 +50,32 @@ you will get roots:
 ```
 
 ## Koa Exemple
-Get middleware generation function ``const router = require('auto-roots').koa``  
-Get the middleware function ``router(path, __dirname)``  
+Get middleware generation function ``const {router} = require('auto-roots')``  
+Get the middleware function ``.use(router(__dirname+path'))``  
 
 ``index.js``
 ```index.js
 const Koa = require("koa");
 const cors = require("@koa/cors");
-const router = require('auto-roots').koa;
+const {router} = require('auto-roots');
 const app = new Koa();
 
 app.use(parser())
   .use(cors())
-  .use(router(__dirname+'/roots'))
+  .use(router(__dirname+'/roots'));
   .listen(8000, () => {
     console.log(`🚀 on port:${8000}`);
   });
 ```
 
-For the router to work, the controller file must return an instance of the router, otherwise it will be skipped.  
-The router constructor can be obtained from  ``require('auto-roots').Router``  
+For the router to work, the controller file must return an instance of the Root, otherwise it will be skipped.  
+The router constructor can be obtained from  ``require('auto-roots').Root``  
 This is done as a prevention of errors causing vulnerabilities. 
 
 
 ``controller.js``
 ```controller.js
-const Root = require('auto-roots').Root
+const {Root} = require('auto-roots')
 
 module.exports = new Root({ 
        GET: [
@@ -97,14 +97,14 @@ module.exports = new Root({
 You can combine arrays or single functions inside one constructor.  
 
 ## Express Exemple
-Get middleware generation function ``const router = require('auto-roots').express``  
-Get the middleware function ``router(path)``  
+Get middleware generation function ``const {router} = require('auto-roots')``  
+Get the middleware function ``app.use(router(__dirname+path))``  
 
 ``index.js``
 ```index.js
 const express = require("express");
 const cors = require("cors");
-const router = require('auto-roots').express;
+const {router} = require('auto-roots');
 const app = express();
 
 app.use(parser());
@@ -116,12 +116,14 @@ app.listen(8000, () => {
 ```
 
 For the router to work, the controller file must return an instance of the router, otherwise it will be skipped.  
-The router constructor can be obtained from  ``require('auto-roots').Router``  
+The router constructor can be obtained from  ``require('auto-roots').Root``  
 This is done as a prevention of errors causing vulnerabilities. 
 
 
 ``controller.js``
 ```controller.js
+const {Root} = require('auto-roots')
+
 module.exports = new Root({ 
       GET: [
           middlewareFunction,
