@@ -100,9 +100,11 @@ function getRoots(direction, prefix='/'){
     return fs.readdirSync(direction+prefix)
     .map(file => {
         if(file.includes('.js')){
-            const controller = require(direction+prefix+file)
-            if(!(controller instanceof exports.Root)) return {};
-            return {[prefix+file.split('.js')[0]]: controller}
+            try {
+                const controller = require(direction+prefix+file)
+                if(!(controller instanceof exports.Root)) return {};
+                return {[prefix+file.split('.js')[0]]: controller}
+            } catch (error) { console.error(error.message)}
         }else{
             return getRoots(direction, prefix+file+'/')
         }
