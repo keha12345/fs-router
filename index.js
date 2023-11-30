@@ -69,7 +69,7 @@ exports.Root = class Root {
             }
             return await next()
         } catch (error) {
-            ctx.log(error.message, 'error');
+            console.error(error.message, 'error');
             ctx.status = 500;
             return;
         }
