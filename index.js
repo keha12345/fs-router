@@ -14,12 +14,11 @@ exports.router = (path) => {
     const roots = getRoots(path);
     return async (...args) => {
         // async (ctx, next) => {
-
-        let reqStr = ctx.request.href.replace( ctx.request.origin,'')
-        reqStr = 
-        reqStr.includes('/?')? reqStr.split('/?')[0]: 
-        reqStr.includes('?')? reqStr.split('?')[0] : 
-        reqStr;
+        // async (req, res, next) => {
+        let reqStr;
+        if(args.length === 2) args[0].request.href.replace( args[0].request.origin,'');
+        if(args.length === 3) args[0].href.replace( args[0].origin,'');
+        reqStr =  reqStr.split('/?')[0].split('?')[0] 
         const root = roots[reqStr];
         // console.log(reqStr, roots, roots[reqStr]);
         if(!root && args.length === 2) return args[0].response.status = 404; 
