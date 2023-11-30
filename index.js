@@ -16,11 +16,10 @@ exports.router = (path) => {
         // async (ctx, next) => {
         // async (req, res, next) => {
         let reqStr;
-        if(args.length === 2) args[0].request.href.replace( args[0].request.origin,'');
-        if(args.length === 3) args[0].href.replace( args[0].origin,'');
+        if(args.length === 2) reqStr =  args[0].request.href.replace( args[0].request.origin,'');
+        if(args.length === 3) reqStr =  args[0].href.replace( args[0].origin,'');
         reqStr =  reqStr.split('/?')[0].split('?')[0] 
         const root = roots[reqStr];
-        // console.log(reqStr, roots, roots[reqStr]);
         if(!root && args.length === 2) return args[0].response.status = 404; 
         if(!root && args.length === 3) return args[1].sendStatus(404); 
         return await root[args.length === 2? '_koaHandler' : '_expressHandler'](...args);
